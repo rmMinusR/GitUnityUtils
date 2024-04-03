@@ -28,7 +28,7 @@ for k in objects.keys():
     splitDir = sourceFilePath+".split/"
     if not os.path.exists(splitDir): os.mkdir(splitDir)
     with open(splitDir+str(k)+".yml", "w+") as objectFile:
-        objectFile.write(fileHeader+"\n"+objects[k].content+"\n")
+        objectFile.write(fileHeader+"\n"+str(objects[k])+"\n")
 
 end = time.perf_counter()
 print(f"Extracted {len(objects)} objects in {end-start}s")

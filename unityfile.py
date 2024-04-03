@@ -12,12 +12,13 @@ class UnityObject:
         return UnityObject(
             int(matches.group(2)),
             int(matches.group(1)),
-            block,
+            block[block.find("\n")+1:],
             lines
         )
 
     def __init__(this, localid:localid_t, nativeType:str, content:str, lines:tuple[int,int]):
         this.__localid = localid
+        this.__nativeType = nativeType
         this.content = content
         this.lines = lines
 
@@ -25,4 +26,4 @@ class UnityObject:
     def localid(this): return this.__localid
     
     def __str__(this) -> str:
-        return f"--- !u!{this.nativeType} &{this.localid}\n{this.content}"
+        return f"--- !u!{this.__nativeType} &{this.__localid}\n{this.content}"
