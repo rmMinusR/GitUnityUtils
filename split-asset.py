@@ -5,6 +5,7 @@ parser = argparse.ArgumentParser(
 )
 parser.add_argument("input")
 parser.add_argument("output", nargs="?")
+args = parser.parse_args()
 
 
 import time
@@ -13,7 +14,6 @@ from unityfile import *
 
 start = time.perf_counter()
 
-args = parser.parse_args()
 assetFile = UnityFile.fromPath(args.input)
 
 # Setup destination
