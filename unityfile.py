@@ -61,23 +61,35 @@ class UnityFile:
 
 
 class ObjectDiff:
-    @staticmethod
-    def fromUnityObjects(a:UnityObject, b:UnityObject):
-        assert a.localid == b.localid, f"Wrong objects compared: {a.localid} vs {b.localid}"
-        assert next(a.content.keys()) == next(b.content.keys()), f"Type of object changed: {next(a.content.keys())} -> {next(b.content.keys())}"
-        return ObjectDiff(a.content, b.content)
+    def __init__(this, a, b):
+        assert type(a) == type(b), f"Field serialization spec changed: {type(a)} -> {type(b)}"
+        
+        def doInit(this, a:dict, b:dict):
+            this.removed:dict[str,Any] = dict()
+            for k in set(a.keys()).difference(b.keys()):
+                this.removed[k] = a[k]
+                
+            this.added:dict[str,Any] = dict()
+            for k in set(b.keys()).difference(a.keys()):
+                this.added[k] = b[k]
+                
+            this.both:dict[str,ObjectDiff|tuple[Any,Any]] = dict()
+            for k in set(a.keys()).intersection(b.keys()):
+                if isinstance(a[k], dict) or isinstance(a[k], UnityObject): this.both[k] = ObjectDiff(a[k], b[k])
+                else: this.both[k] = (a[k], b[k])
+        
 
-    def __init__(this, a:dict[str,Any], b:dict[str,Any]):
-        this.removed:dict[str,Any] = dict()
-        for k in set.difference(a.keys(), b.keys()):
-            this.removed[k] = a[k]
-                
-        this.added:dict[str,Any] = dict()
-        for k in set.difference(b.keys(), a.keys()):
-            this.added[k] = b[k]
-                
-        this.modified:dict[str,ObjectDiff|tuple[Any,Any]] = dict()
-        for k in set.intersection(a.keys(), b.keys()):
-            assert type(a[k]) == type(b[k]), f"Field serialization spec changed: {type(a[k])} -> {type(b[k])}"
-            if isinstance(a[k], dict): this.modified[k] = ObjectDiff(a[k], b[k])
-            else: this.modified[k] = (a[k], b[k])
+        if isinstance(a, dict):
+            doInit(this, a, b)
+            
+        elif isinstance(a, UnityObject):
+            assert a.localid == b.localid, f"Wrong objects compared: {a.localid} vs {b.localid}"
+            aType = list(a.content.keys())[0]
+            bType = list(b.content.keys())[0]
+            assert aType == bType, f"Type of object changed: {aType} -> {bType}"
+            doInit(this, a.content, b.content)
+            
+        elif isinstance(a, UnityFile):
+            doInit(this, a.objects, b.objects)
+        
+            
